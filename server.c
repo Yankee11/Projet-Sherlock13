@@ -5,7 +5,6 @@
 #include <sys/types.h> 
 #include <sys/socket.h>
 #include <netinet/in.h>
-
 #include <netdb.h>
 #include <arpa/inet.h>
 
@@ -309,49 +308,49 @@ int main(int argc, char *argv[])
 				// Si le nombre de joueurs atteint 4, alors on peut lancer le jeu
 
                                 if (nbClients==4)
-				{    int j;
-					// On envoie ses cartes au joueur 0, ainsi que la ligne qui lui correspond dans tableCartes
-					// RAJOUTER DU CODE ICI
-					sprintf(reply, "D %d %d %d", deck[0], deck[1], deck[2]);
-					sendMessageToClient(tcpClients[0].ipAddress, tcpClients[0].port, reply);
-					for (j=0; j<8; j++) {
-						sprintf(reply, "V 0 %d %d", j, tableCartes[0][j]);
-						sendMessageToClient(tcpClients[0].ipAddress, tcpClients[0].port, reply);
-					}
+                                {   int j;
+                    // Joueur 0
+                    // RAJOUTER DU CODE ICI
+                    sprintf(reply, "D %d %d %d", deck[0], deck[1], deck[2]);
+                    sendMessageToClient(tcpClients[0].ipAddress, tcpClients[0].port, reply);
+                    for (j = 0; j < 8; j++) {
+                        // On envoie la valeur initiale de tableCartes[i][j] au joueur
+                        sprintf(reply, "V 0 %d %d", j, tableCartes[0][j]);
+                        sendMessageToClient(tcpClients[0].ipAddress, tcpClients[0].port, reply);
+                    }
 
-					// On envoie ses cartes au joueur 1, ainsi que la ligne qui lui correspond dans tableCartes
-					// RAJOUTER DU CODE ICI
-					sprintf(reply, "D %d %d %d", deck[3], deck[4], deck[5]);
-					sendMessageToClient(tcpClients[1].ipAddress, tcpClients[1].port, reply);
-					for (j=0; j<8; j++) {
-						sprintf(reply, "V 1 %d %d", j, tableCartes[1][j]);
-						sendMessageToClient(tcpClients[1].ipAddress, tcpClients[1].port, reply);
-					}	
+                    // Joueur 1
+                    // RAJOUTER DU CODE ICI
+                    sprintf(reply, "D %d %d %d", deck[3], deck[4], deck[5]);
+                    sendMessageToClient(tcpClients[1].ipAddress, tcpClients[1].port, reply);
+                    for (j = 0; j < 8; j++) {
+                        sprintf(reply, "V 1 %d %d", j, tableCartes[1][j]);
+                        sendMessageToClient(tcpClients[1].ipAddress, tcpClients[1].port, reply);
+                    }
 
-					// On envoie ses cartes au joueur 2, ainsi que la ligne qui lui correspond dans tableCartes
-					// RAJOUTER DU CODE ICI
-					sprintf(reply, "D %d %d %d", deck[6], deck[7], deck[8]);
-					sendMessageToClient(tcpClients[2].ipAddress, tcpClients[2].port, reply);
-					for (j=0; j<8; j++) {
-						sprintf(reply, "V 2 %d %d", j, tableCartes[2][j]);
-						sendMessageToClient(tcpClients[2].ipAddress, tcpClients[2].port, reply);
-					}
+                    // Joueur 2
+                    // RAJOUTER DU CODE ICI
+                    sprintf(reply, "D %d %d %d", deck[6], deck[7], deck[8]);
+                    sendMessageToClient(tcpClients[2].ipAddress, tcpClients[2].port, reply);
+                    for (j = 0; j < 8; j++) {
+                        sprintf(reply, "V 2 %d %d", j, tableCartes[2][j]);
+                        sendMessageToClient(tcpClients[2].ipAddress, tcpClients[2].port, reply);
+                    }
 
-					// On envoie ses cartes au joueur 3, ainsi que la ligne qui lui correspond dans tableCartes
-					// RAJOUTER DU CODE ICI
-					sprintf(reply, "D %d %d %d", deck[9], deck[10], deck[11]);
-					sendMessageToClient(tcpClients[3].ipAddress, tcpClients[3].port, reply);
-					for (j=0; j<8; j++) {
-						sprintf(reply, "V 3 %d %d", j, tableCartes[3][j]);
-						sendMessageToClient(tcpClients[3].ipAddress, tcpClients[3].port, reply);
-					}
+                    // Joueur 3
+                    // RAJOUTER DU CODE ICI
+                    sprintf(reply, "D %d %d %d", deck[9], deck[10], deck[11]);
+                    sendMessageToClient(tcpClients[3].ipAddress, tcpClients[3].port, reply);
+                    for (j = 0; j < 8; j++) {
+                        sprintf(reply, "V 3 %d %d", j, tableCartes[3][j]);
+                        sendMessageToClient(tcpClients[3].ipAddress, tcpClients[3].port, reply);
+                    }
 
-					// On envoie enfin un message a tout le monde pour definir qui est le joueur courant=0
-					// RAJOUTER DU CODE ICI
-					sprintf(reply, "M %d", joueurCourant);
-    				broadcastMessage(reply);
-
-                                     fsmServer=1;
+                    // Joueur courant
+                    // RAJOUTER DU CODE ICI
+                    sprintf(reply, "M %d", joueurCourant);
+                    broadcastMessage(reply);
+                    fsmServer = 1;
 				}
 				break;
                 }
@@ -360,34 +359,73 @@ int main(int argc, char *argv[])
 	{
 		switch (buffer[0])
 		{
-                	case 'G':
-				// RAJOUTER DU CODE ICI
-				break;
-                	case 'O':
-				// RAJOUTER DU CODE ICI
-				{
-        int idJoueur, idObjet;
-        sscanf(buffer, "O %d %d", &idJoueur, &idObjet);
-        
-        // On parcourt tous les joueurs pour voir qui a l'objet
-        for (i = 0; i < 4; i++) {
-            if (tableCartes[i][idObjet] > 0) {
-                // On informe tout le monde que le joueur i a au moins un exemplaire de cet objet
-                // On utilise 100 pour symboliser "présent" dans la grille (affiche un '*' dans sh13.c)
-                sprintf(reply, "V %d %d %d", i, idObjet, 100);
+            case 'G':
+                // RAJOUTER DU CODE ICI
+            {
+                int idJoueur, idObjet;
+                sscanf(buffer, "G %d %d", &idJoueur, &idObjet);
+
+                for (i = 0; i < 4; i++) {
+                    int valeur;
+
+                    if (i == idJoueur) {
+                        valeur = tableCartes[i][idObjet];
+                    } else {
+                        valeur = (tableCartes[i][idObjet] > 0) ? 100 : 0;
+                    }
+
+                    sprintf(reply, "V %d %d %d", i, idObjet, valeur);
+                    sendMessageToClient(tcpClients[i].ipAddress,tcpClients[i].port,reply);
+                }
+                // On passe au joueur suivant
+                joueurCourant = (joueurCourant + 1) % 4;
+                sprintf(reply, "M %d", joueurCourant);
                 broadcastMessage(reply);
             }
-        }
-        
-        // On passe au joueur suivant
-        joueurCourant = (joueurCourant + 1) % 4;
-        sprintf(reply, "M %d", joueurCourant);
-        broadcastMessage(reply);
-    }
-				break;
-			case 'S':
-				// RAJOUTER DU CODE ICI
-				break;
+            break;
+            case 'O':
+                // RAJOUTER DU CODE ICI
+            {
+                int idJoueur, idObjet;
+                sscanf(buffer, "O %d %d", &idJoueur, &idObjet);
+
+                for (i = 0; i < 4; i++) {
+                    int valeur;
+                    if (i == idJoueur) {
+                        // Le joueur qui pose la question voit son vrai nombre
+                        valeur = tableCartes[i][idObjet];
+                    } else {
+                        // Les autres voient * s’ils possèdent le symbole
+                        valeur = (tableCartes[i][idObjet] > 0) ? 100 : 0;
+                    }
+
+                    sprintf(reply, "V %d %d %d", i, idObjet, valeur);
+                    sendMessageToClient(tcpClients[i].ipAddress,tcpClients[i].port,reply);
+                }
+                
+                // On passe au joueur suivant
+                joueurCourant = (joueurCourant + 1) % 4;
+                sprintf(reply, "M %d", joueurCourant);
+                broadcastMessage(reply);
+            }
+            break;
+            case 'S':
+                // RAJOUTER DU CODE ICI
+            {
+                int idJoueur, joueurCible, idObjet;
+                sscanf(buffer, "S %d %d %d", &idJoueur, &joueurCible, &idObjet);
+
+                int valeur = tableCartes[joueurCible][idObjet];
+
+                sprintf(reply, "V %d %d %d", joueurCible, idObjet, valeur);
+                broadcastMessage(reply);
+                
+                // On passe au joueur suivant
+                joueurCourant = (joueurCourant + 1) % 4;
+                sprintf(reply, "M %d", joueurCourant);
+                broadcastMessage(reply);
+            }
+            break;
                 	default:
                         	break;
 		}
