@@ -268,31 +268,19 @@ int main(int argc, char ** argv)
 				else if ((mx>=500) && (mx<700) && (my>=350) && (my<450) && (goEnabled==1))
 				{
 					printf("go! joueur=%d objet=%d guilt=%d\n",joueurSel, objetSel, guiltSel);
-					if (guiltSel!=-1)
-					{
-						sprintf(sendBuffer,"G %d %d",gId, guiltSel);
-
-					// RAJOUTER DU CODE ICI
-					sendMessageToServer(gServerIpAddress, gServerPort, sendBuffer);
-
-					}
-					else if ((objetSel!=-1) && (joueurSel==-1))
-					{
-						sprintf(sendBuffer,"O %d %d",gId, objetSel);
-
-					// RAJOUTER DU CODE ICI
-					sendMessageToServer(gServerIpAddress, gServerPort, sendBuffer);
-					
-
-					}
-					else if ((objetSel!=-1) && (joueurSel!=-1))
-					{
-						sprintf(sendBuffer,"S %d %d %d",gId, joueurSel,objetSel);
-
-					// RAJOUTER DU CODE ICI
-					sendMessageToServer(gServerIpAddress, gServerPort, sendBuffer);
-
-					}
+                    if (guiltSel != -1) {
+                        // C'est une accusation
+                        sprintf(sendBuffer, "ACC %d %d", gId, guiltSel);  // ACC pour accusation
+                        sendMessageToServer(gServerIpAddress, gServerPort, sendBuffer);
+                    } else if ((objetSel != -1) && (joueurSel == -1)) {
+                        // Joueur regarde un objet pour lui-même
+                        sprintf(sendBuffer, "O %d %d", gId, objetSel);
+                        sendMessageToServer(gServerIpAddress, gServerPort, sendBuffer);
+                    } else if ((objetSel != -1) && (joueurSel != -1)) {
+                        // Joueur pose une question à un autre
+                        sprintf(sendBuffer, "S %d %d %d", gId, joueurSel, objetSel);
+                        sendMessageToServer(gServerIpAddress, gServerPort, sendBuffer);
+                    }
 				}
 				else
 				{
@@ -342,14 +330,45 @@ int main(int argc, char ** argv)
 				break;
 			}
 				// Message 'V' : le joueur recoit une valeur de tableCartes
-			case 'V':
-			{
-				// RAJOUTER DU CODE ICI
-				int joueur, objet, val;
-				sscanf(gbuffer, "V %d %d %d", &joueur, &objet, &val);
-				tableCartes[joueur][objet] = val;
-				break;
-			}	
+            case 'V':
+            {
+                int joueur, objet, val;
+                sscanf(gbuffer, "V %d %d %d", &joueur, &objet, &val);
+                
+               
+                if (joueur != gId) {
+                    if (tableCartes[joueur][objet] == -1 || tableCartes[joueur][objet] == 100 || tableCartes[joueur][objet] == 0)
+                        tableCartes[joueur][objet] = val;
+                } else {
+                    if (tableCartes[joueur][objet] == -1)
+                        tableCartes[joueur][objet] = val;
+                }
+            }
+            break;
+            case 'W': // WIN
+            {
+                int idWin;
+                sscanf(gbuffer, "WIN %d", &idWin);
+                if (idWin == gId)
+                    printf("J'ai gagné !\n");
+                else
+                    printf("Le joueur %d a gagné !\n", idWin);
+                goEnabled = 0; // plus de tour possible
+                break;
+            }
+            case 'E': // joueur éliminé
+            {
+                int idLose;
+                sscanf(gbuffer, "E %d", &idLose);
+                if (idLose == gId)
+                    printf("Je suis éliminé !\n");
+                else
+                    printf("Le joueur %d est éliminé !\n", idLose);
+
+                // Désactiver bouton go
+                if (idLose == gId) goEnabled = 0;
+                break;
+            }
 			}
 
 		synchro=0;
