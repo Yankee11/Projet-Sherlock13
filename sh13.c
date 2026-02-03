@@ -270,7 +270,7 @@ int main(int argc, char ** argv)
 					printf("go! joueur=%d objet=%d guilt=%d\n",joueurSel, objetSel, guiltSel);
                     if (guiltSel != -1) {
                         // C'est une accusation
-                        sprintf(sendBuffer, "ACC %d %d", gId, guiltSel);  // ACC pour accusation
+                        sprintf(sendBuffer, "G %d %d", gId, guiltSel);
                         sendMessageToServer(gServerIpAddress, gServerPort, sendBuffer);
                     } else if ((objetSel != -1) && (joueurSel == -1)) {
                         // Joueur regarde un objet pour lui-même

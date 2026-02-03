@@ -365,32 +365,47 @@ int main(int argc, char *argv[])
              {
                  case 'G':
                  {
-                     int idJoueur, idObjet;
-                     sscanf(buffer, "G %d %d", &idJoueur, &idObjet);
-
-                     if (!joueurActif[idJoueur]) break;
-
-                     for (int i = 0; i < 4; i++)
-                     {
-                         for (int j = 0; j < 4; j++)
+                     int idJoueur, idCarteAccusee;
+                     sscanf(buffer, "G %d %d", &idJoueur, &idCarteAccusee);
+                     if (!joueurActif[idJoueur])
+                         break;
+                     if (idCarteAccusee == deck[12]){
+                         sprintf(reply, "WIN %d", idJoueur);
+                         broadcastMessage(reply);
+                         // fin de partie
+                         fsmServer = 2;
+                     }
+                     else {
+                         joueurActif[idJoueur] = 0;
+                         sprintf(reply, "E %d", idJoueur);
+                         broadcastMessage(reply);
+                         int dernier = -1;
+                         int nbActifs = 0;
+                         for (int i = 0; i < 4; i++)
                          {
-                             int val;
-                             if (i == idJoueur)            // le joueur qui pose la question
-                                 val = tableCartes[j][idObjet]; // vraie valeur
-                             else                          // tous les autres
-                                 val = (tableCartes[j][idObjet] > 0) ? 100 : 0;
+                             if (joueurActif[i])
+                             {
+                                 nbActifs++;
+                                 dernier = i;
+                             }
+                         }
+                         if (nbActifs == 1)
+                         {
+                             sprintf(reply, "WIN %d", dernier);
+                             broadcastMessage(reply);
+                             fsmServer = 2;
+                         }
+                         else
+                         {
+                             // passer au joueur suivant
+                             do {
+                                 joueurCourant = (joueurCourant + 1) % 4;
+                             } while (!joueurActif[joueurCourant]);
 
-                             sprintf(reply, "V %d %d %d", j, idObjet, val);
-                             sendMessageToClient(tcpClients[i].ipAddress, tcpClients[i].port, reply);
+                             sprintf(reply, "M %d", joueurCourant);
+                             broadcastMessage(reply);
                          }
                      }
-
-                     // Joueur suivant
-                     do {
-                         joueurCourant = (joueurCourant + 1) % 4;
-                     } while (!joueurActif[joueurCourant]);
-                     sprintf(reply, "M %d", joueurCourant);
-                     broadcastMessage(reply);
                  }
                  break;
 
@@ -410,7 +425,7 @@ int main(int argc, char *argv[])
                              sendMessageToClient(tcpClients[i].ipAddress, tcpClients[i].port, reply);
                      }
 
-                     // Joueur suivant
+                     // passer au joueur suivant
                      do {
                          joueurCourant = (joueurCourant + 1) % 4;
                      } while (!joueurActif[joueurCourant]);
@@ -431,71 +446,13 @@ int main(int argc, char *argv[])
                      sprintf(reply, "V %d %d %d", joueurCible, idObjet, valeur);
                      broadcastMessage(reply);
 
-                     // Joueur suivant
+                     // passer au joueur suivant
                      do {
                          joueurCourant = (joueurCourant + 1) % 4;
                      } while (!joueurActif[joueurCourant]);
 
                      sprintf(reply, "M %d", joueurCourant);
                      broadcastMessage(reply);
-                 }
-                 break;
-
-                 case 'A': // Accusation
-                 {
-                     int idJoueur, idCarteAccusee;
-                     sscanf(buffer, "A %d %d", &idJoueur, &idCarteAccusee);
-
-                     if (!joueurActif[idJoueur]) break;
-
-                     if (idCarteAccusee == 12)
-                     {
-                         // joueur gagne
-                         sprintf(reply, "WIN %d", idJoueur);
-                         broadcastMessage(reply);
-
-                         // désactiver tous les joueurs sauf le gagnant
-                         for (int i = 0; i < 4; i++)
-                             if (i != idJoueur) joueurActif[i] = 0;
-
-                         fsmServer = 2; // fin de partie
-                     }
-                     else
-                     {
-                         // joueur éliminé
-                         joueurActif[idJoueur] = 0;
-                         sprintf(reply, "E %d", idJoueur);
-                         broadcastMessage(reply);
-
-                         // vérifier s'il ne reste qu'un joueur actif
-                         int reste = -1, nbActifs = 0;
-                         for (int i = 0; i < 4; i++)
-                         {
-                             if (joueurActif[i])
-                             {
-                                 nbActifs++;
-                                 reste = i;
-                             }
-                         }
-
-                         if (nbActifs == 1)
-                         {
-                             // ce joueur est le gagnant par défaut
-                             sprintf(reply, "WIN %d", reste);
-                             broadcastMessage(reply);
-                             fsmServer = 2; // fin de partie
-                         }
-                         else
-                         {
-                             // avancer au joueur suivant actif
-                             do {
-                                 joueurCourant = (joueurCourant + 1) % 4;
-                             } while (!joueurActif[joueurCourant]);
-
-                             sprintf(reply, "M %d", joueurCourant);
-                             broadcastMessage(reply);
-                         }
-                     }
                  }
                  break;
 
