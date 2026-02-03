@@ -330,18 +330,14 @@ int main(int argc, char ** argv)
 				break;
 			}
 				// Message 'V' : le joueur recoit une valeur de tableCartes
-            case 'V':
+            case 'V': // mise à jour d'une case de la grille
             {
                 int joueur, objet, val;
                 sscanf(gbuffer, "V %d %d %d", &joueur, &objet, &val);
-                
-               
-                if (joueur != gId) {
-                    if (tableCartes[joueur][objet] == -1 || tableCartes[joueur][objet] == 100 || tableCartes[joueur][objet] == 0)
-                        tableCartes[joueur][objet] = val;
-                } else {
-                    if (tableCartes[joueur][objet] == -1)
-                        tableCartes[joueur][objet] = val;
+
+                if (val != -1)
+                {
+                    tableCartes[joueur][objet] = val;
                 }
             }
             break;

@@ -416,13 +416,16 @@ int main(int argc, char *argv[])
 
                      if (!joueurActif[idJoueur]) break;
 
-                     for (int j = 0; j < 4; j++)
+                     for (int dest = 0; dest < 4; dest++)
                      {
-                         int val = (j == idJoueur) ? tableCartes[j][idObjet] : ((tableCartes[j][idObjet] > 0) ? 100 : 0);
-                         sprintf(reply, "V %d %d %d", j, idObjet, val);
-
-                         for (int i = 0; i < 4; i++)
-                             sendMessageToClient(tcpClients[i].ipAddress, tcpClients[i].port, reply);
+                         for (int j = 0; j < 4; j++)
+                         {
+                             if (j == dest) continue;
+                             int val = (tableCartes[j][idObjet] > 0) ? 100 : 0;
+                             char reply[64];
+                             sprintf(reply, "V %d %d %d", j, idObjet, val);
+                             sendMessageToClient(tcpClients[dest].ipAddress, tcpClients[dest].port, reply);
+                         }
                      }
 
                      // passer au joueur suivant
@@ -439,13 +442,10 @@ int main(int argc, char *argv[])
                  {
                      int idJoueur, joueurCible, idObjet;
                      sscanf(buffer, "S %d %d %d", &idJoueur, &joueurCible, &idObjet);
-
                      if (!joueurActif[idJoueur]) break;
-
                      int valeur = tableCartes[joueurCible][idObjet];
                      sprintf(reply, "V %d %d %d", joueurCible, idObjet, valeur);
                      broadcastMessage(reply);
-
                      // passer au joueur suivant
                      do {
                          joueurCourant = (joueurCourant + 1) % 4;
